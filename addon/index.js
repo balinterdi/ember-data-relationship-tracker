@@ -9,6 +9,11 @@ export default Mixin.create({
     this._relationshipTracker = Object.create(null);
   },
 
+  async save() {
+    await this._super();
+    this.notifyPropertyChange('changed');
+  },
+
   watchRelationship(field, fn) {
     let entry = this._relationshipTracker[field];
     if (!entry) {
@@ -58,9 +63,11 @@ function currentState(model, field) {
 
 function changedKey(model) {
   let changed = model.get('changed');
-  if (changed) {
-    return changed.getTime();
-  } else {
+  if (!changed) {
     return -1;
   }
+  if (typeof changed.getTime === 'function') {
+    return changed.getTime();
+  }
+  return changed;
 }
